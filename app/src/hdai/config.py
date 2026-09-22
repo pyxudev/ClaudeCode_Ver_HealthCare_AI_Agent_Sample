@@ -1,7 +1,8 @@
 """Runtime configuration.
 
-Every setting has a default that works in the compose stack, so a missing .env
-can never be the reason the container fails to boot.
+Every non-secret setting has a default that works in the compose stack, so a
+missing override can never be the reason the container fails to boot. Secrets
+(DB password, API key) are never defaulted here - compose injects them from .env.
 """
 
 from __future__ import annotations
@@ -17,7 +18,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="HDAI_", extra="ignore")
 
     # --- Infrastructure ---
-    database_url: str = "postgresql://hdai:hdai_local_dev_pw@postgres:5432/hdai"
+    # Passwordless on purpose: the real DSN (with the password from .env) always
+    # arrives as HDAI_DATABASE_URL from docker-compose.yml.
+    database_url: str = "postgresql://hdai@postgres:5432/hdai"
     redis_url: str = "redis://redis:6379/0"
     data_file: str = "/data/sample_doctors.json"
     log_level: str = "INFO"

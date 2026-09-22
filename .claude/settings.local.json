@@ -27,7 +27,8 @@
       "Bash(docker rm *)",
       "Bash(docker exec hdai-baddata2 python -c ' *)",
       "Bash(docker exec hdai-bad3 python -c ' *)",
-      "Bash(echo *)"
+      "Bash(echo *)",
+      "Bash(docker volume *)"
     ]
   }
 }

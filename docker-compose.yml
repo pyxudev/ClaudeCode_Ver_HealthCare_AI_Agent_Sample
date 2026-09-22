@@ -1,6 +1,7 @@
 # Healthcare Doctor Recommendation AI Platform - POC stack (design doc section 14).
-# Everything below has safe defaults so that a bare `docker-compose up -d` works
-# with no .env file present. Override via .env (see .env.example).
+# No credential is hard-coded here: secrets come from .env only (see .env.example).
+# Run `cp .env.example .env` once before the first `docker-compose up -d`;
+# non-secret settings (ports, log level) still fall back to sane defaults.
 name: hdai
 
 services:
@@ -10,7 +11,9 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-hdai}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hdai_local_dev_pw}
+      # Required, never defaulted: a hard-coded fallback would ship a known
+      # database password with the repository.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (cp .env.example .env)}
       POSTGRES_DB: ${POSTGRES_DB:-hdai}
       # Deterministic collation so ORDER BY is stable across hosts.
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
@@ -50,7 +53,7 @@ services:
     container_name: hdai-api
     restart: unless-stopped
     environment:
-      HDAI_DATABASE_URL: postgresql://${POSTGRES_USER:-hdai}:${POSTGRES_PASSWORD:-hdai_local_dev_pw}@postgres:5432/${POSTGRES_DB:-hdai}
+      HDAI_DATABASE_URL: postgresql://${POSTGRES_USER:-hdai}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env (cp .env.example .env)}@postgres:5432/${POSTGRES_DB:-hdai}
       HDAI_REDIS_URL: redis://redis:6379/0
       HDAI_DATA_FILE: /data/sample_doctors.json
       HDAI_LOG_LEVEL: ${HDAI_LOG_LEVEL:-INFO}

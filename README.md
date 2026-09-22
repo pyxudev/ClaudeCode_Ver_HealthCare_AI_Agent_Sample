@@ -7,10 +7,11 @@ department they need, and recommends bookable doctors with appointment slots.
 ## Run it
 
 ```bash
+cp .env.example .env    # sets POSTGRES_PASSWORD - compose refuses to start without it
 docker-compose up -d
 ```
 
-No `.env` and no API key required. Then:
+No API key required. Then:
 
 | | |
 |---|---|
@@ -37,7 +38,8 @@ Teardown: `docker-compose down -v`.
 The platform runs fully without an LLM. To turn it on:
 
 ```bash
-echo 'ANTHROPIC_API_KEY=sk-ant-...' >> .env && docker-compose up -d
+# in .env, set: ANTHROPIC_API_KEY=sk-ant-...
+docker-compose up -d
 ```
 
 `HDAI_LLM_ENABLED` is `auto` (use it if a key exists), `on`, or `off`.
