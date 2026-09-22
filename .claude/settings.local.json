@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(docker-compose --version)",
+      "Bash(docker info *)",
+      "Bash(timeout 180 docker pull pgvector/pgvector:pg16)",
+      "Bash(awk '{print $4}')",
+      "Bash(grep -oE '[0-9]+$')",
+      "Bash(timeout 300 docker pull python:3.13-slim)",
+      "Bash(timeout 120 docker pull redis:7-alpine)",
+      "Bash(python3 -)",
+      "Bash(python3 -c \"import ast;ast.parse\\(open\\('safety.py',encoding='utf-8'\\).read\\(\\)\\);print\\('parses OK'\\)\")",
+      "Bash(docker-compose build *)",
+      "Bash(docker-compose up *)",
+      "Bash(echo \"=== exit: $? ===\")",
+      "Bash(curl *)",
+      "Bash(docker-compose cp *)",
+      "Bash(docker-compose exec *)",
+      "Bash(docker-compose down *)",
+      "Bash(docker rmi *)",
+      "Bash(echo \"=== compose exit: $? ===\")",
+      "Bash(cd *)",
+      "Bash(docker run *)",
+      "Bash(docker exec hdai-baddata python -c ' *)",
+      "Bash(docker rm *)",
+      "Bash(docker exec hdai-baddata2 python -c ' *)",
+      "Bash(docker exec hdai-bad3 python -c ' *)",
+      "Bash(echo *)"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+# Pinned for reproducible builds. Deliberately small: every extra dependency is
+# another way `docker-compose up -d` can fail on a clean machine.
+fastapi==0.115.6
+uvicorn==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+psycopg[binary,pool]==3.2.3
+redis==5.2.1
+httpx==0.28.1
+# Required by FastAPI for the form-encoded Twilio webhooks.
+python-multipart==0.0.20
+# python:3.13-slim ships no system tzdata; zoneinfo needs this for Asia/Tokyo.
+tzdata==2024.2
+
+# Test-only (kept in the image so `docker-compose exec api pytest` just works).
+pytest==8.3.4
+pytest-asyncio==0.25.0

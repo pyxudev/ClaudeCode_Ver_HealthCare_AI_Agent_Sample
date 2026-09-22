@@ -1,0 +1,94 @@
+# Healthcare Doctor Recommendation AI Platform - POC stack (design doc section 14).
+# Everything below has safe defaults so that a bare `docker-compose up -d` works
+# with no .env file present. Override via .env (see .env.example).
+name: hdai
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hdai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hdai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hdai_local_dev_pw}
+      POSTGRES_DB: ${POSTGRES_DB:-hdai}
+      # Deterministic collation so ORDER BY is stable across hosts.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    # Host port is configurable because 5432 is very often already in use.
+    ports:
+      - "${POSTGRES_HOST_PORT:-55432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-hdai} -d ${POSTGRES_DB:-hdai} -q"]
+      interval: 3s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks: [hdai-data]
+
+  redis:
+    image: redis:7-alpine
+    container_name: hdai-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "no", "--save", "", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "${REDIS_HOST_PORT:-56379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+      start_period: 3s
+    networks: [hdai-data]
+
+  api:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    image: hdai-api:local
+    container_name: hdai-api
+    restart: unless-stopped
+    environment:
+      HDAI_DATABASE_URL: postgresql://${POSTGRES_USER:-hdai}:${POSTGRES_PASSWORD:-hdai_local_dev_pw}@postgres:5432/${POSTGRES_DB:-hdai}
+      HDAI_REDIS_URL: redis://redis:6379/0
+      HDAI_DATA_FILE: /data/sample_doctors.json
+      HDAI_LOG_LEVEL: ${HDAI_LOG_LEVEL:-INFO}
+      # LLM is OPTIONAL. With no key the platform runs fully on the deterministic
+      # rule-based path (see README "Degraded modes").
+      HDAI_ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      HDAI_LLM_MODEL: ${HDAI_LLM_MODEL:-claude-haiku-4-5-20251001}
+      HDAI_LLM_ENABLED: ${HDAI_LLM_ENABLED:-auto}
+      # Sample data slots are dated 2026-08; shift them forward so the POC has
+      # bookable availability. Set to false for real data.
+      HDAI_DEMO_SHIFT_PAST_SLOTS: ${HDAI_DEMO_SHIFT_PAST_SLOTS:-true}
+    ports:
+      - "${API_HOST_PORT:-8080}:8000"
+    volumes:
+      # Read-only so the container can never corrupt the source dataset.
+      - ./sample_doctors.json:/data/sample_doctors.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # /readyz, not /healthz: a container that is alive but cannot reach the
+      # database or has no doctors loaded must not report itself healthy.
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=3).status==200 else 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    networks: [hdai-data, hdai-app]
+
+volumes:
+  pgdata:
+
+networks:
+  # Mirrors the design doc's zone split (section 10): only the API bridges both.
+  hdai-app:
+    driver: bridge
+  hdai-data:
+    driver: bridge
+    internal: true
