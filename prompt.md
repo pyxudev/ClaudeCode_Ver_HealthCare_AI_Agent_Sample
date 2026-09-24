@@ -1,4 +1,9 @@
-1. Please refer to the design doc `Healthcare_Doctor_AI_System_Design.md` and sample data sets `sample_doctors.json`, make sure you understand the project.
-2. And make sure you have considered all the risks and errors while running the agent and all mistakes the model could make.
-3. Then start build the project make sure it could be ran by `docker-compose up -d` with no error and success at once.
-4. After that, please list up what did you test and what the tests covered, which items or aspects are not covered by your tests.
+1. Review the design document `Healthcare_Doctor_AI_System_Design.md` and the sample dataset `sample_doctors.json` and ensure that you fully understand the project requirements.
+2. Identify and analyze potential risks, edge cases, failure scenarios, and possible model mistakes. Incorporate appropriate safeguards and error-handling mechanisms into the implementation.
+3. Build the project according to the design. Ensure that the entire system can be started successfully using `docker-compose up -d` without requiring any manual intervention and without runtime errors on the first run.
+4. Execute all relevant tests and provide a report including:
+   - Tests performed
+   - Test coverage and scenarios covered
+   - Known limitations
+   - Untested areas and reasons they were not tested
+   - Any assumptions made during implementation
